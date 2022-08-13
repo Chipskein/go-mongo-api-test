@@ -6,7 +6,6 @@ import (
 	"go-mongo-api-test/utils/database"
 	"go-mongo-api-test/utils/password"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,8 +27,7 @@ func CreateUserEndPoint(response http.ResponseWriter, request *http.Request) {
 	user.Password = hashedPassword
 	var mongoClient = database.GetMongoClient()
 	var collection = mongoClient.Database("testdatabase").Collection("users")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	result, err := collection.InsertOne(ctx, user)
+	result, err := collection.InsertOne(context.TODO(), user)
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
@@ -42,15 +40,14 @@ func ShowAllUsersEndPoint(response http.ResponseWriter, request *http.Request) {
 	var users []User
 	var mongoClient = database.GetMongoClient()
 	var collection = mongoClient.Database("testdatabase").Collection("users")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	cursor, err := collection.Find(ctx, bson.M{})
+	cursor, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
 		return
 	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx) {
+	defer cursor.Close(context.TODO())
+	for cursor.Next(context.TODO()) {
 		var user User
 		cursor.Decode(&user)
 		users = append(users, user)
@@ -69,8 +66,7 @@ func GetUserByIdEndpoint(response http.ResponseWriter, request *http.Request) {
 	var user User
 	var mongoClient = database.GetMongoClient()
 	var collection = mongoClient.Database("testdatabase").Collection("users")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err := collection.FindOne(ctx, User{ID: id}).Decode(&user)
+	err := collection.FindOne(context.TODO(), User{ID: id}).Decode(&user)
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
@@ -86,8 +82,7 @@ func UpdateUserEndpoint(response http.ResponseWriter, request *http.Request) {
 
 	var mongoClient = database.GetMongoClient()
 	var collection = mongoClient.Database("testdatabase").Collection("users")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err := collection.FindOne(ctx, User{ID: user.ID}).Decode(&user2)
+	err := collection.FindOne(context.TODO(), User{ID: user.ID}).Decode(&user2)
 
 	if user.Password != "" {
 		hashedPassword, _ := password.HashPassword(user.Password)
@@ -110,7 +105,7 @@ func UpdateUserEndpoint(response http.ResponseWriter, request *http.Request) {
 			},
 		}}
 
-	result, err := collection.UpdateOne(ctx, filter, update)
+	result, err := collection.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
@@ -125,8 +120,7 @@ func DeleteUserEndpoint(response http.ResponseWriter, request *http.Request) {
 	id, _ := primitive.ObjectIDFromHex(params["id"])
 	var mongoClient = database.GetMongoClient()
 	var collection = mongoClient.Database("testdatabase").Collection("users")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	_, err := collection.DeleteOne(ctx, User{ID: id})
+	_, err := collection.DeleteOne(context.TODO(), User{ID: id})
 	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
