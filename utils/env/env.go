@@ -21,7 +21,7 @@ func LoadEnviroment() {
 		log.Panic("Error loading .env file")
 	}
 	MongoDBURL := os.Getenv("MongoDBURL")
-	portString := os.Getenv("Port")
+	portString := os.Getenv("PORT")
 	Port, err := strconv.Atoi(portString)
 	if err != nil {
 		log.Panic("Port is not a integer")
