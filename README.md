@@ -5,10 +5,16 @@
 ## Routes
     GET /users
     GET /users/{id}
+    GET /users/{id}/delete
     POST /users {
         email,
         password,
         name
+    }
+    POST /users/{id}/update {
+        email?,
+        password?,
+        name?
     }
     
 ## Run Locallly
