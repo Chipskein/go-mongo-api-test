@@ -11,7 +11,8 @@
         password,
         name
     }
-    POST /users/{id}/update {
+    POST /users/update {
+        _id,
         email?,
         password?,
         name?
