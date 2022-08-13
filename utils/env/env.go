@@ -18,7 +18,7 @@ type EnviromentVariables struct {
 func LoadEnviroment() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Panic("Error loading .env file")
+		log.Printf("Error loading .env file")
 	}
 	MongoDBURL := os.Getenv("MongoDBURL")
 	portString := os.Getenv("PORT")
