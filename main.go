@@ -14,5 +14,6 @@ func main() {
 	database.CreateMongoClient(env.Enviroment.MongoDBURL)
 	router := routes.CreateRouter()
 	log.Println("Server at port:", env.Enviroment.Port)
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.ListenAndServe(fmt.Sprintf(":%d", env.Enviroment.Port), router)
 }

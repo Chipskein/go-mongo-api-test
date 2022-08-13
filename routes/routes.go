@@ -8,7 +8,6 @@ import (
 
 func CreateRouter() *mux.Router {
 	router := mux.NewRouter()
-
 	router.HandleFunc("/users", usercontroller.CreateUserEndPoint).Methods("POST")
 	router.HandleFunc("/users", usercontroller.ShowAllUsersEndPoint).Methods("GET")
 	router.HandleFunc("/users/{id}", usercontroller.GetUserByIdEndpoint).Methods("GET")
