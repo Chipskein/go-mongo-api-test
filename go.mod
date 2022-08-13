@@ -1,4 +1,4 @@
-module go-mongo-test
+module go-mongo-api-test
 
 go 1.19
 
