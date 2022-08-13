@@ -78,3 +78,61 @@ func GetUserByIdEndpoint(response http.ResponseWriter, request *http.Request) {
 	}
 	json.NewEncoder(response).Encode(user)
 }
+func UpdateUserEndpoint(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("content-type", "application/json")
+	var user User
+	var user2 User
+	json.NewDecoder(request.Body).Decode(&user)
+
+	var mongoClient = database.GetMongoClient()
+	var collection = mongoClient.Database("testdatabase").Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err := collection.FindOne(ctx, User{ID: user.ID}).Decode(&user2)
+
+	if user.Password != "" {
+		hashedPassword, _ := password.HashPassword(user.Password)
+		user2.Password = hashedPassword
+	}
+	if user.Name != "" {
+		user2.Name = user.Name
+	}
+	if user.Email != "" {
+		user2.Email = user.Email
+	}
+
+	filter := bson.D{primitive.E{Key: "_id", Value: user2.ID}}
+	update := bson.D{
+		primitive.E{Key: "$set",
+			Value: bson.D{
+				primitive.E{Key: "email", Value: user2.Email},
+				primitive.E{Key: "password", Value: user2.Password},
+				primitive.E{Key: "name", Value: user2.Name},
+			},
+		}}
+
+	result, err := collection.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
+		return
+	}
+	json.NewEncoder(response).Encode(result)
+}
+func DeleteUserEndpoint(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("content-type", "application/json")
+	params := mux.Vars(request)
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	var mongoClient = database.GetMongoClient()
+	var collection = mongoClient.Database("testdatabase").Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	_, err := collection.DeleteOne(ctx, User{ID: id})
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+	response.Write([]byte(`{"message":"05_DELETED"}`))
+
+}
